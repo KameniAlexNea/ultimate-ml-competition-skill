@@ -1,5 +1,15 @@
 # Validation Strategy
 
+## Overview
+
+Validation strategy is the foundation of every competition pipeline. The choice of cross-validation scheme controls whether your OOF score is an honest proxy for the leaderboard or a misleading in-sample estimate. A wrong split (e.g., `KFold` when a group column exists, or `StratifiedKFold` on time-ordered data) can produce OOF scores that are 0.01–0.05 higher than the actual LB — making every other improvement invisible.
+
+This file covers: choosing the right CV method for your competition type; correct `GroupKFold`, `StratifiedKFold`, and `TimeSeriesSplit` setup; OOF array accumulation and saving; target encoding inside folds (leakage prevention); and the `leakage_check` utility.
+
+**When to use:** Before writing a single line of training code. The CV scheme must be decided and locked before feature engineering, training, or tuning begins — changing it mid-competition invalidates all previous OOF comparisons.
+
+---
+
 ## Choose the Right CV Strategy First
 
 | Competition type | CV method | When to use |
@@ -176,3 +186,14 @@ When OOF > LB:
 3. Check feature engineering — does it use future rows?
 4. Check early stopping metric — is it the exact competition formula?
 5. Check aux/prior data — does the distribution match the test set? Compare OOF without aux data.
+
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [feature-engineering.md](./feature-engineering.md) | Target encoding must be computed fold-by-fold — the fold split is defined here |
+| [model-training.md](./model-training.md) | Trainers consume the fold indices produced by the CV strategy |
+| [experiment-tracking.md](./experiment-tracking.md) | OOF vs LB divergence diagnosis — the first place to look when CV and LB disagree |
+| [common-pitfalls.md](./common-pitfalls.md) | Pitfalls #5 (combined split OOF indexing) and #12 (gating score leakage) |

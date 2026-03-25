@@ -1,6 +1,13 @@
----
-name: coding-rules
-description: Python coding standards for competition agents. Enforces no unused variables/imports, no dead private helpers, clear function contracts, explicit typing, and minimal technical debt. Apply when reviewing or writing `src/*.py` and `scripts/*.py` to keep code production-safe and maintainable.
+# Coding Rules
+
+## Overview
+
+These are Python coding standards applied as a hard quality gate before finalizing any change in `src/*.py` or `scripts/*.py`. They exist because competition codebases are iterated quickly under deadline pressure — dead code accumulates, function signatures drift from their behavior, and debug artifacts get committed. Each rule below directly prevents a class of bugs observed in production pipelines.
+
+**Six non-negotiable rules:** no dead code; clear contracts; single responsibility; explicit types and names; predictable data handling; structured logging. Each failure mode is illustrated with a ❌ BAD and ✅ GOOD example.
+
+**How to use this file:** Before committing any Python change, run through the 6-point verification checklist at the end. If another engineer cannot understand what a function does in under 30 seconds, the function must be rewritten or split.
+
 ---
 
 # Role and Objective
@@ -110,3 +117,11 @@ Do not leave behind known dead code, confusing contracts, or avoidable technical
 # Stop Conditions
 
 Finish only when the code meets all applicable rules above for maintainability, clarity, and production safety.
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [common-pitfalls.md](./common-pitfalls.md) | Production bugs caused by contract violations and dead code |
+| [process-management.md](./process-management.md) | Safe launch patterns for training scripts that follow these coding standards |

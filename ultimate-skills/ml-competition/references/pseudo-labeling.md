@@ -1,5 +1,17 @@
 # Pseudo-Labeling
 
+## Overview
+
+Pseudo-labeling extends training data by treating high-confidence test predictions as labeled examples and retraining on the combined train + pseudo-test set. When applied correctly, it typically adds 0.001–0.003 to LB on competitions where the test distribution is similar to train. When applied incorrectly — too early, with low-confidence labels, or on distribution-shifted test data — it amplifies base model errors and degrades performance.
+
+This file covers: preconditions that must hold before any pseudo-labeling attempt; pseudo label generation by task type (binary, regression, multiclass, multi-label); the fold loop pattern; confidence thresholds; sample weighting; and pitfalls.
+
+**The single most important rule:** pseudo-labeling must only begin after all base models have converged and are individually tuned. Pseudo labels inherit all errors from the base models — running pseudo-labeling on an undertrained pipeline amplifies weaknesses rather than strengths.
+
+**When to use:** After base models are fully trained (OOF stable, Optuna tuning complete, no pending architecture changes). After base ensemble is evaluated. Before adding the meta ensemble layer.
+
+---
+
 ## When to Use
 
 - ✅ All base models have converged (OOF stable, no pending architecture changes)
@@ -201,3 +213,14 @@ pseudo_exists = not (Path("oof") / f"pseudo_{m}.pkl").exists()
 3. Run meta on base only → submit
 4. Run meta with pseudo → submit and compare
 Never submit two changes at once.
+
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [ensemble-meta.md](./ensemble-meta.md) | Ensemble is run on pseudo OOF outputs |
+| [common-pitfalls.md](./common-pitfalls.md) | Pitfalls #6 (mismatched labels on partial resume), #15 (scale_pos_weight) |
+| [validation-strategy.md](./validation-strategy.md) | Same fold splits must be used in pseudo retraining |
+| [experiment-tracking.md](./experiment-tracking.md) | OOF gain threshold — only commit pseudo if OOF improves ≥ 0.001 |

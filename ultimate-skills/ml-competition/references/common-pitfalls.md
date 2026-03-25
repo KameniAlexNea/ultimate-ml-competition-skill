@@ -1,5 +1,13 @@
 # Common Pitfalls (Hard-Won Lessons)
 
+## Overview
+
+This file catalogs bugs and mistakes discovered in production competition pipelines. Each entry follows the same format: **Bug** (what went wrong and why it is silent), **Fix** (the correct pattern with code), and a reference to the canonical source for the topic. Every entry here represents a real score loss — read them before starting any new pipeline component.
+
+**How to use:** Before finalizing any trainer, tuner, or ensemble component, scan this file. If your code matches a ❌ pattern, fix it before running.
+
+---
+
 These are bugs and mistakes discovered in production. Never repeat them.
 
 ---
@@ -213,3 +221,15 @@ def _deep_merge(base, override):
 If you want to override `tune_dir: "tuning/v1"` back to `null` in YAML, it won't work.
 
 **Workaround:** Use a sentinel string like `"none"` and handle it in the resolver.
+
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [competition-metrics.md](./competition-metrics.md) | Correct metric injection patterns that prevent pitfalls #2, #3, #10, #11 |
+| [validation-strategy.md](./validation-strategy.md) | OOF accumulation patterns that prevent pitfalls #5, #12 |
+| [hyperparameter-tuning.md](./hyperparameter-tuning.md) | Full `load_tuned_params` contract (pitfall #1 and #9) |
+| [pseudo-labeling.md](./pseudo-labeling.md) | Correct pseudo loop that prevents pitfalls #6 and #15 |
+| [feature-engineering.md](./feature-engineering.md) | Cache versioning rules that prevent pitfall #8 |

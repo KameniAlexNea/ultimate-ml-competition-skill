@@ -1,5 +1,18 @@
 # Competition Metric Implementations
 
+## Overview
+
+This file is the single source of truth for all competition metric implementations. It covers: the fundamental distinction between training loss and eval metric; the generic `competition_score(y_true, y_pred)` pattern; per-framework metric injection for CatBoost (binary, regression, multiclass), LightGBM, XGBoost, and Neural Networks; NN training losses (FocalLoss, SmoothBCE, MSE, CrossEntropy); and shared scoring helpers in `base/common.py`.
+
+**The most expensive bug in this pipeline:** using the wrong eval metric for early stopping. A model trained with `metric="binary_logloss"` when the competition uses a weighted AUC + LL blend will stop at the wrong iteration — typically 10× too early or too late — and every downstream experiment (tuning, ensemble, pseudo-labeling) will be built on a suboptimal base. This is silent: the model trains successfully and produces OOF scores; the OOF just does not track the leaderboard.
+
+**How to use this file:**
+1. Define `competition_score` in `base/metrics.py` — copy-adapt the template in Step 1 below
+2. Copy the appropriate framework wrappers into `base/metrics.py` — one per framework you use
+3. Import from `base/metrics.py` everywhere — never inline the formula in trainer or tuner files
+
+---
+
 ## Two Distinct Concepts — Never Confuse Them
 
 | Concept | What it is | Who uses it |
@@ -417,3 +430,14 @@ def print_scores(y_dict, oof_dict, label=""):
     logger.info(f"    Score = {score:.6f}{tag}")
     return score
 ```
+
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [model-training.md](./model-training.md) | Trainer parameter sets that reference the metric wrappers defined here |
+| [hyperparameter-tuning.md](./hyperparameter-tuning.md) | Tuner objectives import `competition_score` directly from this file |
+| [output-format.md](./output-format.md) | Metric name determines the prediction type required in the submission |
+| [common-pitfalls.md](./common-pitfalls.md) | Pitfalls #2, #3, #10, #11 — all caused by wrong eval metric setup |

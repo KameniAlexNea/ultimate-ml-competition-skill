@@ -1,11 +1,16 @@
----
-name: metrics
-description: Competition metric reference. Maps every common Kaggle/Zindi metric to its prediction type (probability vs label vs rank vs value), the correct sklearn/scipy call, and the exact submission format required. Load this skill when writing the Submission Format section of DATA_BRIEFING.md, when implementing the CV loop metric, or when the validator needs to confirm prediction types.
----
+# Output Format & Submission Prediction Type
 
-# Competition Metrics
+## Overview
 
-The #1 source of silent score destruction in ML competitions: submitting **class labels when the metric expects probabilities** (or vice versa). A 0.91 AUC model submitting "Yes/No" strings scores ~0.5 — indistinguishable from random. This skill exists to prevent that.
+The #1 source of silent score destruction in ML competitions is submitting the wrong prediction type for the competition metric. A model with 0.91 AUC submitting "Yes"/"No" strings instead of probabilities scores ~0.5 — indistinguishable from random — with no error message. This is preventable with a single check before writing any submission code.
+
+This file covers: the core rule (metric determines prediction type, not `train.csv` target dtype); a complete metric-to-prediction-type table; sklearn call patterns for every metric; per-task submission format examples; OOF collection patterns; and the scout checklist to complete before writing submission code.
+
+**The most dangerous confusion:** `train.csv` target column may contain strings ("Yes"/"No", "cat"/"dog") even when the submission requires floats (probabilities). The training target type and the submission prediction type are independent. Always derive the submission format from `sample_submission.csv` and the leaderboard metric name — never from `train.csv`.
+
+**When to use:** Immediately after reading the competition README, before writing any `predict_proba` or `model.predict` call. Also consult when an apparently good model is scoring near 0.5 AUC on the leaderboard despite strong OOF — prediction type mismatch is the first diagnosis to rule out.
+
+---
 
 ## The Core Rule
 
@@ -191,3 +196,12 @@ When writing `DATA_BRIEFING.md`, always answer ALL of the following:
 6. **Quote the README evaluation section** confirming the format.
 
 > ⚠️ **The target in `train.csv` may be strings ("Yes"/"No", "cat"/"dog") even when the submission requires probabilities (floats).** Train target strings are labels for *training* — the submission column is for *predictions*. Always derive the submission format from `sample_submission.csv` and the metric name, never from the train target dtype.
+
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [competition-metrics.md](./competition-metrics.md) | Metric implementations that match the leaderboard formula identified here |
+| [submission-postprocessing.md](./submission-postprocessing.md) | Calibration and clipping applied after the correct prediction type is confirmed |

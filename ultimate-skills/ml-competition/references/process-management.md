@@ -1,9 +1,16 @@
----
-name: process-management
-description: Safe launch, monitor, and deduplication patterns for long-running training scripts. Prevents duplicate processes, detects stale vs fresh artifacts, and enforces the correct PID-capture wait pattern. Invoke before launching any training run, or when confused about whether a training is in progress.
----
-
 # Process Management
+
+## Overview
+
+Training scripts routinely run for 30 minutes to several hours. Without disciplined process management, the most common mistake is launching a second training process before the first has finished — two processes writing to the same `oof.npy` file, silently corrupting results with no error message.
+
+This file provides the exact shell patterns for: pre-flight checks (is training already running? are artifacts already fresh?); launching and monitoring a training process; killing and relaunching after a code change; and diagnosing a fast or silent exit. Each workflow is a copy-paste shell block — use them verbatim.
+
+**The single most common anti-pattern:** assigning `TRAIN_PID=$!` on the same line as the `&` command. Bash evaluates `$!` before the background job is registered, so `TRAIN_PID` is empty. Every subsequent `kill -0 $TRAIN_PID` returns immediately, the wait loop never waits, and the next agent step runs while training is still in progress — overwriting outputs.
+
+**When to use:** Before every `uv run python scripts/train.py` call. This is not optional — it is a hard prerequisite, like checking for syntax errors before deploying.
+
+---
 
 Training scripts can take minutes to hours. The single most costly mistake is
 launching a second process before the first has finished. This skill gives you
@@ -201,3 +208,12 @@ cat train_debug.log
 ```
 
 Only **after** understanding the cause should you modify any code and relaunch.
+
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [coding-rules.md](./coding-rules.md) | Code quality gate to apply before launching any training script |
+| [experiment-tracking.md](./experiment-tracking.md) | Log OOF scores and artifact timestamps produced by the training process |

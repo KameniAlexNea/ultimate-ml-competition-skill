@@ -1,5 +1,17 @@
 # Experiment Tracking
 
+## Overview
+
+Experiment tracking is the practice of recording every OOF evaluation and every LB submission in a structured log. Without it, competition work degrades into guesswork: you lose track of which feature version or ensemble weight produced a given LB score, you submit stale predictions, and you cannot tell whether a new change is genuinely better than a previous one.
+
+This file covers: the score ledger format; using OOF as a real-time leaderboard proxy; diagnosing OOF vs LB divergence; the decision framework for what to submit; and the reproducibility checklist.
+
+**The core discipline:** OOF score is computed from the saved `.pkl` file — never from training logs or in-memory arrays. Training logs may represent a mid-epoch or mid-fold state. The `.pkl` always represents the final, post-averaged fold result.
+
+**When to use:** Throughout the competition, for every experiment. Refer to the divergence table whenever your OOF and LB scores do not move together — this is the earliest diagnostic signal for leakage, metric bugs, or distribution shift.
+
+---
+
 ## Why Tracking Matters
 
 ML competitions involve many parallel experiments: different models, feature versions, ensemble weights, post-processing settings. Without structured tracking you will lose results, submit stale predictions, or forget which version produced your best LB score.
@@ -150,3 +162,13 @@ logger.info(f"  [{step}] OOF = {oof_score:.6f}")
 ```
 
 Keep logs for every experiment — they contain the per-fold scores needed to diagnose variance issues.
+
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [common-pitfalls.md](./common-pitfalls.md) | Pitfall #12 (in-sample gating inflates OOF score) |
+| [validation-strategy.md](./validation-strategy.md) | The CV strategy determines whether OOF is an honest LB proxy |
+| [submission-postprocessing.md](./submission-postprocessing.md) | Final step before filing; post-processed OOF score should be logged here |

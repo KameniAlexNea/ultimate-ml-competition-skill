@@ -1,5 +1,15 @@
 # Model Training Reference
 
+## Overview
+
+This file is the authoritative reference for implementing CatBoost, LightGBM, XGBoost, and Neural Network base models in a competition pipeline. It covers: the trainer architecture pattern (stateless fold engine); the critical distinction between training objective and eval metric; correct parameter sets for each task type (binary, regression, multiclass); training loops with GroupKFold and seed averaging; and auxiliary data handling.
+
+**Before reading further**, confirm your task type in the SKILL.md Task Type Decision Guide. Several parameters documented here are **binary classification only** — `scale_pos_weight`, `is_unbalance`, `auto_class_weights: Balanced` — and must be removed for regression and multiclass. Applying them to the wrong task type produces silent score degradation.
+
+**When to use:** When writing or reviewing any trainer file (`base/lgb_trainer.py`, `xgb_trainer.py`, `nn_trainer.py`) or model entrypoint (`train/cat.py`, `lgb.py`, etc.). Also consult when adapting a binary classifier for regression or multiclass.
+
+---
+
 ## Trainer Architecture
 
 Trainers are **stateless fold engines** — they receive data and params, return OOF + test preds. Entrypoints handle I/O, logging, and OOF saving.
@@ -306,3 +316,14 @@ Whatever device you tune on **must match** the device you train on. If you tune 
 - `xgb_trainer.py` / `XGB_BASE_PARAMS` → `"device": "cuda:0"`
 
 must match `tune_lgb.py` and `tune_xgb.py`.
+
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [competition-metrics.md](./competition-metrics.md) | Full metric wrapper implementations for CB / LGB / XGB / NN |
+| [hyperparameter-tuning.md](./hyperparameter-tuning.md) | Tuner objectives must mirror the exact trainer params shown here |
+| [validation-strategy.md](./validation-strategy.md) | GroupKFold and OOF accumulation patterns used in trainer loops |
+| [common-pitfalls.md](./common-pitfalls.md) | Pitfalls #2, #3 (wrong eval metric), #7 (scale_pos_weight), #15 (pseudo params) |
