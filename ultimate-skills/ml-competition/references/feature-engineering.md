@@ -1,5 +1,18 @@
 # Feature Engineering
 
+## Overview
+
+Feature engineering is the highest-leverage activity in tabular competitions — a good feature can outperform days of hyperparameter tuning. This file covers the architecture rules for `base/features.py`, all encoding strategies (ordinal, frequency, one-hot, target encoding), datetime and interaction features, aggregation patterns, and feature selection techniques.
+
+**Three non-negotiable rules** govern every feature in this pipeline:
+1. **Deterministic** — same inputs always produce the same outputs; no randomness in `engineer_features()`
+2. **Versioned** — bump the cache file name (`features_v1.pkl` → `features_v2.pkl`) every time logic changes; stale cache is the most common source of unexplained OOF changes
+3. **Leak-free** — target-based statistics (target encoding, aggregations over the target) must be computed fold-by-fold inside cross-validation, never on the full training set
+
+**When to use:** When adding, modifying, or debugging features. Also consult before any cache-related confusion ("why did my OOF drop after I changed the feature?").
+
+---
+
 ## Architecture Rule
 
 Feature engineering belongs in `base/features.py`. It must be:
@@ -206,3 +219,14 @@ result = permutation_importance(trained_model, X_val, y_val, n_repeats=5, random
 | Feature cache not bumped after change | Increment `vN` in `feat_cache` config immediately |
 | Normalization fit on all data | `fit_transform` on train, `transform` on test/val |
 | Interaction features before selection | Explosion of features — select first, interact after |
+
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [validation-strategy.md](./validation-strategy.md) | Fold splits that govern where target encoding is computed |
+| [model-training.md](./model-training.md) | `build_model_matrices()` consumes the output of `engineer_features()` |
+| [project-structure.md](./project-structure.md) | Cache file naming conventions and `feat_cache` config key |
+| [common-pitfalls.md](./common-pitfalls.md) | Pitfall #8 — feature cache version not bumped after logic change |

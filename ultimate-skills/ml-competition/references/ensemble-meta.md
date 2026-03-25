@@ -1,5 +1,17 @@
 # Ensemble & Meta-Learning
 
+## Overview
+
+Ensembling combines the predictions of multiple base models to improve generalization beyond any single model. This file documents the four ensemble levels used in this pipeline — weighted blend, LogReg stacking, dynamic gating, and weights+gating hybrid — and explains when each one is appropriate.
+
+**A critical principle:** ensemble scores are only meaningful if computed on honest out-of-fold (OOF) predictions. Never evaluate an ensemble on in-sample predictions or on a subset of the val fold — the score will be inflated and will not reflect true generalization. All ensemble methods here use the same OOF arrays produced by the base trainer fold loops.
+
+**Ensemble hierarchy by increasing complexity and overfit risk:** weighted blend → LogReg stacking → dynamic gating → weights+gating blend. On datasets with fewer than 20K rows, Level 1 (weighted blend) frequently beats more complex methods. Always start at Level 1 and move up only when OOF gain is confirmed.
+
+**When to use:** After all base models are trained and their OOF pkl files saved. Do not attempt ensembling before base models are individually optimized — it will obscure rather than fix model-level bugs.
+
+---
+
 ## Ensemble Hierarchy (ascending trust order)
 
 ```
@@ -235,3 +247,14 @@ d = load_oof("cat", tag="base")
 oof_cat = d["oof"]   # {target: np.array(n_train,)}
 tst_cat = d["test"]  # {target: np.array(n_test,)}
 ```
+
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [pseudo-labeling.md](./pseudo-labeling.md) | Pseudo OOF files are consumed as inputs to the ensemble |
+| [experiment-tracking.md](./experiment-tracking.md) | Logging ensemble OOF scores and deciding which variant to submit |
+| [submission-postprocessing.md](./submission-postprocessing.md) | Post-process the ensemble output before generating the submission file |
+| [common-pitfalls.md](./common-pitfalls.md) | Pitfall #12 — in-sample gating score mixed with honest OOF |

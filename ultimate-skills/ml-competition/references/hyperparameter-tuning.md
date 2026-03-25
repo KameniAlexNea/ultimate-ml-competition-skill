@@ -1,5 +1,19 @@
 # Hyperparameter Tuning with Optuna
 
+## Overview
+
+Hyperparameter tuning with Optuna systematically searches the parameter space to find configurations that maximize the competition metric. This file covers: the tuning architecture (`tune.py` → `run_study()` → per-model objectives); the `tune_config.yaml` format; the `load_tuned_params` contract (the single most common source of tuning bugs); and search spaces for CatBoost, LightGBM, XGBoost, and NN.
+
+**The most common tuning bug:** `load_tuned_params` returns the `params` sub-dict instead of the full JSON. The caller then calls `params[t].update(tuned)`, which silently merges `"value"`, `"trial"`, and `"timestamp"` keys into the model params — causing either a runtime error or, worse, silently wrong training. See the [load_tuned_params contract](#load_tuned_params-contract--critical) section and [common-pitfalls.md](./common-pitfalls.md) #1 for the fix.
+
+**Two non-negotiable rules for tuning correctness:**
+1. Tuner folds must use **identical CV splits** as training (same `GroupKFold`, same group column)
+2. Tuner must use the **exact same competition metric** as training — never a surrogate like log-loss when the competition uses a weighted AUC+LL blend
+
+**When to use:** After base models are implemented and producing reasonable OOF scores. Run tuning before pseudo-labeling and ensemble — tuned base models produce better pseudo labels and ensemble inputs.
+
+---
+
 ## Architecture
 
 ```
@@ -207,3 +221,14 @@ for epoch in range(epochs):
   "lgb": [{"model": "lgb", "trial": 42, "value": 0.9527, "params": {...}}]
 }
 ```
+
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [model-training.md](./model-training.md) | Trainer parameter sets that the tuner must mirror |
+| [competition-metrics.md](./competition-metrics.md) | Metric wrappers reused in tuner objectives — must be identical to training |
+| [common-pitfalls.md](./common-pitfalls.md) | Pitfall #1 (`load_tuned_params` full dict contract), #9 (value=? symptom) |
+| [project-structure.md](./project-structure.md) | `tuning/` directory conventions and `tune_config.yaml` location |

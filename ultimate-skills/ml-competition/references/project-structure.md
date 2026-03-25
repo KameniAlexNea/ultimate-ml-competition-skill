@@ -1,5 +1,19 @@
 # Project Structure & Config
 
+## Overview
+
+A well-structured project is the prerequisite for every other improvement. Without consistent file locations, a `RunConfig` singleton, and a YAML-driven orchestrator, every experiment requires manual coordination — making results non-reproducible and pipeline bugs hard to isolate.
+
+This file documents: the canonical package layout; the `RunConfig` dataclass singleton pattern; the YAML orchestrator with resume-by-existence logic; and naming conventions for OOF files, submission files, and tuning outputs.
+
+**Two principles govern the structure:**
+1. **Single source of truth for config** — all user-tunable knobs live in `config.yaml` and are loaded into `RunConfig` at startup; no magic constants scattered across trainer files
+2. **Resume by existence** — the orchestrator skips any step whose output file already exists; this means you can interrupt and rerun `train.py` at any point without duplicating work or corrupting results
+
+**When to use:** When starting a new competition project, when onboarding code from a notebook to a pipeline, or when debugging "why did my train.py re-run step X when it already produced output?"
+
+---
+
 ## Package Layout
 
 ```
@@ -199,3 +213,14 @@ def load_or_build_matrices(verbose=True):
     _matrices_cache = build_model_matrices(...)
     return _matrices_cache
 ```
+
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [model-training.md](./model-training.md) | Trainer files that live in `package/base/` |
+| [feature-engineering.md](./feature-engineering.md) | Feature cache versioning and `feat_cache` config key |
+| [hyperparameter-tuning.md](./hyperparameter-tuning.md) | `tuning/` directory layout and YAML orchestrator integration |
+| [experiment-tracking.md](./experiment-tracking.md) | `oof/` and `submissions/` directory naming conventions |

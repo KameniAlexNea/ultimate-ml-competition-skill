@@ -2,18 +2,33 @@
 name: ml-competition
 description: "Build, debug, review and improve ML competition pipelines for tabular competitions (Kaggle, Zindi, etc.) covering binary classification, multiclass, regression, multi-label, and ranking tasks. Use when: identifying competition type and setting up the metric; structuring a competition codebase from scratch; reviewing training code for correctness bugs; implementing CatBoost/LightGBM/XGBoost/NN base models; debugging metric leakage or train-LB gaps; adding pseudo-labeling; setting up Optuna hyperparameter tuning with YAML config; building ensemble (weighted blend / LogReg stacking / dynamic gating); managing OOF files; aligning early-stopping metrics with competition objective; adding auxiliary/prior data safely; engineering and selecting features; post-processing and calibrating predictions. NOT for NLP/CV competitions."
 argument-hint: "Describe your task: e.g. 'review training code for bugs', 'implement pseudo-labeling for regression', 'set up Optuna for LGB multiclass', 'debug LB gap'"
+license: MIT
+metadata:
+    skill-author: eak
 ---
 
 # ML Competition Pipeline Skill
 
-## When to Use
-- Starting or structuring a new competition codebase
-- Reviewing any training/tuning code before wasting GPU hours
-- Adding a new model family or modifying an existing one
-- Debugging train OOF vs LB submission gap
-- Setting up or fixing Optuna tuning (metric alignment, best.json format)
+## Overview
+
+This is the core skill for tabular ML competitions (Kaggle, Zindi, and equivalents). It covers the full pipeline from data ingestion to final submission: feature engineering, model training (CatBoost / LightGBM / XGBoost / NN), Optuna hyperparameter tuning, pseudo-labeling, ensemble meta-learning, and submission post-processing.
+
+**Critical principle: every layer of the pipeline owns exactly one thing.** Config drives knobs. Trainers are stateless fold engines. Metrics are defined once and reused everywhere. Violating these boundaries is the single most common source of silent bugs.
+
+This skill is **not** for NLP or CV competitions — those require separate skill sets for tokenization, transformer architectures, and image augmentation pipelines.
+
+## When to Use This Skill
+
+Use this skill when:
+- Starting or structuring a new competition codebase from scratch
+- Reviewing any training or tuning code before wasting GPU hours
+- Implementing or modifying a model family (CatBoost, LGB, XGB, NN)
+- Debugging a train OOF vs LB submission gap
+- Setting up or fixing Optuna tuning — metric alignment, `best.json` format
 - Implementing pseudo-labeling or ensemble meta-learners
-- Safely incorporating auxiliary/prior data
+- Safely incorporating auxiliary or prior-period data
+- Engineering, selecting, or caching features
+- Post-processing, calibrating, or clipping predictions before submission
 
 ---
 
@@ -269,19 +284,21 @@ logger.info(f"loaded (value={tuned.get('value', '?')})")
 
 ## Reference Files
 
-| Topic | File |
-|-------|------|
-| Project structure, config singleton, YAML orchestrator | [project-structure.md](./references/project-structure.md) |
-| Base model setup — CB/LGB/XGB/NN params, training objective vs eval metric | [model-training.md](./references/model-training.md) |
-| Training losses (FocalLoss/SmoothBCE/MSE) + `competition_score` wrappers for all frameworks | [competition-metrics.md](./references/competition-metrics.md) |
-| Optuna tuning — setup, saving/loading best.json | [hyperparameter-tuning.md](./references/hyperparameter-tuning.md) |
-| GroupKFold / TimeSeriesSplit, OOF management, leakage prevention | [validation-strategy.md](./references/validation-strategy.md) |
-| Feature engineering patterns — encoding, aggregations, selection, cache discipline | [feature-engineering.md](./references/feature-engineering.md) |
-| Ensemble: blending, LogReg stacking, dynamic gating | [ensemble-meta.md](./references/ensemble-meta.md) |
-| Pseudo-labeling: when, how, weight, pitfalls | [pseudo-labeling.md](./references/pseudo-labeling.md) |
-| Prediction post-processing: calibration, clipping, domain constraints | [submission-postprocessing.md](./references/submission-postprocessing.md) |
-| Experiment tracking: logging scores, deciding what to submit | [experiment-tracking.md](./references/experiment-tracking.md) |
-| Common bugs from production (never repeat these) | [common-pitfalls.md](./references/common-pitfalls.md) |
-| Python coding standards — dead code, contracts, naming, logging | [coding-rules.md](./references/coding-rules.md) |
-| Process management — pre-flight checks, PID tracking, launch/kill patterns | [process-management.md](./references/process-management.md) |
-| Submission format — metric → prediction type, OOF patterns, scout checklist | [output-format.md](./references/output-format.md) |
+Each file begins with an **Overview** explaining its scope and when to use it, and ends with a **See Also** table of directly related files.
+
+| File | What it covers |
+|------|----------------|
+| [project-structure.md](./references/project-structure.md) | Package layout, `RunConfig` singleton, YAML orchestrator, resume-by-existence logic |
+| [model-training.md](./references/model-training.md) | CB/LGB/XGB/NN params by task type, trainer architecture, training objective vs eval metric |
+| [competition-metrics.md](./references/competition-metrics.md) | `competition_score` pattern, per-framework metric wrappers (CB/LGB/XGB/NN), training losses |
+| [hyperparameter-tuning.md](./references/hyperparameter-tuning.md) | Optuna setup, `run_study()`, `load_tuned_params` contract, per-model search spaces |
+| [validation-strategy.md](./references/validation-strategy.md) | GroupKFold / TimeSeriesSplit, OOF accumulation, leakage prevention, leakage checklist |
+| [feature-engineering.md](./references/feature-engineering.md) | Encoding strategies, datetime features, aggregations, feature selection, cache discipline |
+| [ensemble-meta.md](./references/ensemble-meta.md) | Weighted blend (Nelder-Mead), LogReg stacking, dynamic gating, weights+gating hybrid |
+| [pseudo-labeling.md](./references/pseudo-labeling.md) | When/how/weight, per-task label generation, confidence check, pitfalls |
+| [submission-postprocessing.md](./references/submission-postprocessing.md) | Calibration (Platt/isotonic), OOF-optimised clipping, domain constraints, YAML toggle |
+| [output-format.md](./references/output-format.md) | Metric → prediction type table, submission format by task, OOF collection patterns, scout checklist |
+| [experiment-tracking.md](./references/experiment-tracking.md) | Score ledger, OOF as LB proxy, OOF vs LB divergence diagnosis, submission decision logic |
+| [common-pitfalls.md](./references/common-pitfalls.md) | 16 production bugs with ❌ / ✅ patterns — read before finalizing any component |
+| [coding-rules.md](./references/coding-rules.md) | No dead code, clear contracts, single responsibility, explicit types, structured logging |
+| [process-management.md](./references/process-management.md) | Pre-flight checks, PID tracking, launch/wait/kill patterns, fast-exit diagnosis |
