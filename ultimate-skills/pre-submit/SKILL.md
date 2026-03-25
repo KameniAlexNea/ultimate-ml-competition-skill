@@ -1,11 +1,10 @@
 ---
-name: validation
+name: pre-submit
 description: Pre-submission quality gate for ML competition pipelines. Runs three checks before any result is reported, code review (data leakage, CV contamination, metric errors), submission CSV format validation, and adversarial train/test distribution shift detection. Invoke before reporting any OOF score or submitting predictions.
 license: MIT
 metadata:
     skill-author: eak
 ---
-
 # Validation Skill
 
 ## Overview
@@ -13,6 +12,7 @@ metadata:
 This skill is a mandatory pre-submission quality gate for tabular ML competition pipelines. It catches the three most costly bugs before they reach the leaderboard: target leakage inflating OOF scores, submission CSV format rejections, and OOF–LB correlation collapse caused by distribution shift.
 
 **Three checks, always in this order — skip none:**
+
 1. **Code review** — data leakage, CV contamination, metric implementation errors (`references/checklist.md`)
 2. **Submission format validation** — column names, row count, NaN/Inf, value ranges (Workflow 2)
 3. **Adversarial distribution shift** — train vs test AUC to detect shift and identify offending features (`scripts/adversarial_validation.py`)
@@ -183,12 +183,12 @@ result = run_adversarial_validation(
 
 ### AUC interpretation
 
-| AUC | Verdict | Action |
-| --- | --- | --- |
-| 0.50–0.55 | ✅ No shift | Proceed normally |
-| 0.55–0.65 | ⚠️ Mild shift | Check top features; monitor LB-OOF gap |
-| 0.65–0.80 | ❌ Moderate shift | Drop or transform top leaking features |
-| 0.80–1.00 | 🚨 Severe shift | Likely ID/time leak — investigate immediately |
+| AUC        | Verdict           | Action                                         |
+| ---------- | ----------------- | ---------------------------------------------- |
+| 0.50–0.55 | ✅ No shift       | Proceed normally                               |
+| 0.55–0.65 | ⚠️ Mild shift   | Check top features; monitor LB-OOF gap         |
+| 0.65–0.80 | ❌ Moderate shift | Drop or transform top leaking features         |
+| 0.80–1.00 | 🚨 Severe shift   | Likely ID/time leak — investigate immediately |
 
 ### Using adversarial sample weights
 
@@ -223,18 +223,18 @@ Platform returns 0.0 or error despite local validation passing. Common cause: in
 
 ## Reference Files
 
-| File | What it covers |
-|------|----------------|
-| [checklist.md](./references/checklist.md) | CRITICAL and Important quality gates — data leakage, metric correctness, submission format, robustness |
-| [adversarial_validation.py](./scripts/adversarial_validation.py) | Distribution shift detector: AUC, top leaking features, sample weights for retraining |
+| File                                                          | What it covers                                                                                          |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| [checklist.md](./references/checklist.md)                        | CRITICAL and Important quality gates — data leakage, metric correctness, submission format, robustness |
+| [adversarial_validation.py](./scripts/adversarial_validation.py) | Distribution shift detector: AUC, top leaking features, sample weights for retraining                   |
 
 ---
 
 ## See Also
 
-| Skill / File | Why |
-|-------------|-----|
-| [ml-competition/validation-strategy.md](../ml-competition/references/validation-strategy.md) | CV split strategy — GroupKFold / TimeSeriesSplit, OOF array accumulation |
-| [ml-competition/experiment-tracking.md](../ml-competition/references/experiment-tracking.md) | OOF vs LB divergence diagnosis — run after this checklist passes |
-| [ml-competition/output-format.md](../ml-competition/references/output-format.md) | Metric → prediction type table — governs what Workflow 2 checks |
-| [ml-competition/common-pitfalls.md](../ml-competition/references/common-pitfalls.md) | 16 production bugs — most are variants of the leakage and metric bugs caught here |
+| Skill / File                                                                              | Why                                                                                |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [ml-competition/validation-strategy.md](../ml-competition/references/validation-strategy.md) | CV split strategy — GroupKFold / TimeSeriesSplit, OOF array accumulation          |
+| [ml-competition/experiment-tracking.md](../ml-competition/references/experiment-tracking.md) | OOF vs LB divergence diagnosis — run after this checklist passes                  |
+| [ml-competition/output-format.md](../ml-competition/references/output-format.md)             | Metric → prediction type table — governs what Workflow 2 checks                  |
+| [ml-competition/common-pitfalls.md](../ml-competition/references/common-pitfalls.md)         | 16 production bugs — most are variants of the leakage and metric bugs caught here |
