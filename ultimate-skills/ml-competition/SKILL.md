@@ -153,6 +153,52 @@ See [competition-metrics.md](./references/competition-metrics.md) for full imple
 
 ---
 
+## Output Format — Submission Prediction Type
+
+> **The metric determines the prediction type. The target column values in `train.csv` do NOT.**
+
+The #1 source of silent score destruction: submitting class labels when the metric expects probabilities. A 0.91 AUC model submitting "Yes/No" strings scores ~0.5 — indistinguishable from random.
+
+| Metric | Prediction type | `predict` call |
+|--------|----------------|----------------|
+| AUC-ROC, PR-AUC, Log Loss, Brier | **float [0, 1]** | `model.predict_proba(X)[:, 1]` |
+| Accuracy, F1, Cohen's Kappa, QWK | **class label** | `model.predict(X)` |
+| RMSE, MAE, RMSLE, MAPE | **continuous value** | `model.predict(X)` |
+| Multi-class log loss, MCLL | **prob matrix (n, K)** | `model.predict_proba(X)` |
+| MAP@K, NDCG@K | **ranked list** | task-specific |
+
+### Identifying the metric from competition text
+
+| Phrase in README | Metric | Type |
+|-----------------|--------|------|
+| "AUC", "ROC AUC", "AUROC" | AUC-ROC | probability |
+| "Log Loss", "Logloss", "Cross-Entropy" | Log loss | probability |
+| "Average Precision", "PR-AUC" | AP | probability |
+| "Brier Score" | Brier | probability |
+| "Accuracy", "F1", "F-beta" | Accuracy / F1 | class label |
+| "Quadratic Weighted Kappa", "QWK" | QWK | ordinal label |
+| "RMSE", "MAE", "RMSLE", "MAPE" | Regression | value |
+| "NDCG", "MAP@K" | Ranking | score / ranked list |
+
+### Hard rules
+
+- **Always derive submission format from `sample_submission.csv`**, never from `train.csv` target dtype — train targets may be strings ("Yes"/"No") while submission requires floats
+- **RMSLE**: clip predictions to ≥ 0 before saving; do NOT log-transform before saving
+- **Multiclass log-loss**: column order in submission must match `sample_submission.csv` exactly
+- **OOF arrays**: always collect full arrays, never fold-by-fold averages — `oof[val] = model.predict_proba(X[val])[:, 1]`
+
+### Scout checklist — before writing any submission code
+
+1. What is the **exact metric name**? (Quote from README.)
+2. Is it a **probability metric**? → float predictions required.
+3. What are the **exact column names** in `sample_submission.csv`?
+4. What **value types** do those columns contain? (Check `sample_submission.csv`, not `train.csv`.)
+5. Copy 2–3 **example rows** verbatim from `sample_submission.csv`.
+
+See [output-format.md](./references/output-format.md) for metric-by-metric sklearn calls and OOF collection patterns.
+
+---
+
 ## First-Principles Checklist (new competition)
 
 Complete in this exact order — each depends on the previous:
@@ -238,3 +284,4 @@ logger.info(f"loaded (value={tuned.get('value', '?')})")
 | Common bugs from production (never repeat these) | [common-pitfalls.md](./references/common-pitfalls.md) |
 | Python coding standards — dead code, contracts, naming, logging | [coding-rules.md](./references/coding-rules.md) |
 | Process management — pre-flight checks, PID tracking, launch/kill patterns | [process-management.md](./references/process-management.md) |
+| Submission format — metric → prediction type, OOF patterns, scout checklist | [output-format.md](./references/output-format.md) |
