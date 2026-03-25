@@ -1,8 +1,3 @@
----
-name: metrics
-description: Competition metric reference. Maps every common Kaggle/Zindi metric to its prediction type (probability vs label vs rank vs value), the correct sklearn/scipy call, and the exact submission format required. Load this skill when writing the Submission Format section of DATA_BRIEFING.md, when implementing the CV loop metric, or when the validator needs to confirm prediction types.
----
-
 # Competition Metrics
 
 The #1 source of silent score destruction in ML competitions: submitting **class labels when the metric expects probabilities** (or vice versa). A 0.91 AUC model submitting "Yes/No" strings scores ~0.5 — indistinguishable from random. This skill exists to prevent that.
