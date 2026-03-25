@@ -1,5 +1,15 @@
 # ML Quality Checklist
 
+## Overview
+
+This checklist is the first of three mandatory validation checks. It covers four categories — data leakage, metric correctness, submission format, and robustness — each categorized as CRITICAL or Important.
+
+**CRITICAL items must all pass before reporting any OOF score or generating a submission.** A single CRITICAL failure invalidates your OOF score, even if training completed successfully.
+
+**How to use:** Work through each section top-to-bottom on every new script or after any change to feature engineering, CV splits, or metric code. Mark items as your code is verified. The most common CRITICAL failure in practice is target encoding computed on the full training set (leaks the target into features) — check this first.
+
+---
+
 Fix every **CRITICAL** item before reporting results.
 
 ---
@@ -50,3 +60,26 @@ Fix every **CRITICAL** item before reporting results.
 | 50–69 | Meets most requirements; some gaps or rough edges |
 | 30–49 | Partial implementation; core functionality works |
 | 0–29 | Incomplete; significant requirements unmet |
+
+---
+
+## Failure Patterns and Fixes
+
+| Symptom | Most likely CRITICAL failure | Fix |
+|---------|------------------------------|-----|
+| OOF AUC >> LB AUC (gap ≥ 0.05) | Target encoding fit on full train | Compute inside CV fold — see [validation-strategy.md](../../ml-competition/references/validation-strategy.md) |
+| OOF improves but LB flat | Feature uses future/test info | Check temporal and test-row leakage items |
+| Submission rejected / score 0.0 | Column name, row count, or NaN | Re-run Workflow 2 submission validation |
+| OOF flat but LB improves | OOF metric formula wrong | Re-check metric implementation against leaderboard formula |
+| OOF AUC suspiciously high (> 0.98) on tabular | Target directly or proxy in features | Check ID columns, datetime ordering, calculated targets |
+
+---
+
+## See Also
+
+| File | Why |
+|------|-----|
+| [../SKILL.md](../SKILL.md) | Workflows 1-3 that use this checklist — run all three in order |
+| [../../ml-competition/references/validation-strategy.md](../../ml-competition/references/validation-strategy.md) | Correct CV split and OOF accumulation patterns |
+| [../../ml-competition/references/output-format.md](../../ml-competition/references/output-format.md) | Metric → prediction type — governs the "probability vs label" submission check |
+| [../../ml-competition/references/common-pitfalls.md](../../ml-competition/references/common-pitfalls.md) | Extended list of production bugs that correspond to checklist failures |

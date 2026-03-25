@@ -1,11 +1,27 @@
 ---
 name: validation
 description: Pre-submission quality gate for ML competition pipelines. Runs three checks before any result is reported: code review (data leakage, CV contamination, metric errors), submission CSV format validation, and adversarial train/test distribution shift detection. Invoke before reporting any OOF score or submitting predictions.
+license: MIT
+metadata:
+    skill-author: eak
 ---
 
-# Validation
+# Validation Skill
 
-Three mandatory checks before any iteration result is reported. Catches the most costly bugs in ML competitions: target leakage inflating OOF, submission CSV rejections, and CV-LB correlation collapse from distribution shift.
+## Overview
+
+This skill is a mandatory pre-submission quality gate for tabular ML competition pipelines. It catches the three most costly bugs before they reach the leaderboard: target leakage inflating OOF scores, submission CSV format rejections, and OOF–LB correlation collapse caused by distribution shift.
+
+**Three checks, always in this order — skip none:**
+1. **Code review** — data leakage, CV contamination, metric implementation errors (`references/checklist.md`)
+2. **Submission format validation** — column names, row count, NaN/Inf, value ranges (Workflow 2)
+3. **Adversarial distribution shift** — train vs test AUC to detect shift and identify offending features (`scripts/adversarial_validation.py`)
+
+**Critical principle:** no OOF score is meaningful until all CRITICAL items in the checklist pass. A leaky 0.95 AUC that passes no leakage checks is worthless — it will not exceed 0.70 on the leaderboard.
+
+**When to use:** Before reporting any OOF score or submitting predictions — every single iteration, without exception.
+
+---
 
 ## When to Use
 
@@ -64,10 +80,9 @@ assert submission.isnull().sum().sum() == 0, "NaN in submission"
 submission.to_csv("artifacts/submission.csv", index=False)
 ```
 
-## Reference
+## Workflows
 
-- Full quality checklist: `references/checklist.md`
-- Adversarial validation script: `scripts/adversarial_validation.py`
+The three workflows below map to the three mandatory checks. Run them in order.
 
 ---
 
@@ -135,17 +150,35 @@ print(validate_submission())
 ## Workflow 3 — Adversarial Validation
 
 ```bash
-uv run python scripts/adversarial_validation.py --data data/ --target <target_col>
+uv run python scripts/adversarial_validation.py \
+    --train data/train.csv --test data/test.csv --target <target_col>
 # Prints: AUC, verdict, top-20 leaking features
 # Saves:  artifacts/adversarial_weights.npy
+
+# Optional: specify a different classifier
+uv run python scripts/adversarial_validation.py \
+    --train data/train.csv --test data/test.csv --target <target_col> --clf rf
 ```
 
-Or inline:
+Or inline from Python:
 
 ```python
 from scripts.adversarial_validation import run_adversarial_validation
-result = run_adversarial_validation("data/", target_col="target")
+result = run_adversarial_validation(
+    train_path="data/train.csv",
+    test_path="data/test.csv",
+    target_col="target",
+)
 # {"auc": 0.58, "verdict": "⚠️ Mild shift ...", "top_features": {...}}
+
+# Custom classifier (any sklearn-compatible object):
+from sklearn.ensemble import RandomForestClassifier
+result = run_adversarial_validation(
+    train_path="data/train.csv",
+    test_path="data/test.csv",
+    target_col="target",
+    clf=RandomForestClassifier(n_estimators=300, random_state=42, n_jobs=-1),
+)
 ```
 
 ### AUC interpretation
@@ -185,3 +218,23 @@ Adversarial AUC is 0.52 but LB-OOF gap is still large. Shift exists but in non-n
 Platform returns 0.0 or error despite local validation passing. Common cause: integer IDs in prediction column instead of floats for probability competitions.
 
 **Fix:** Always `submission[pred_col] = submission[pred_col].astype(float)` before saving.
+
+---
+
+## Reference Files
+
+| File | What it covers |
+|------|----------------|
+| [checklist.md](./references/checklist.md) | CRITICAL and Important quality gates — data leakage, metric correctness, submission format, robustness |
+| [adversarial_validation.py](./scripts/adversarial_validation.py) | Distribution shift detector: AUC, top leaking features, sample weights for retraining |
+
+---
+
+## See Also
+
+| Skill / File | Why |
+|-------------|-----|
+| [ml-competition/validation-strategy.md](../ml-competition/references/validation-strategy.md) | CV split strategy — GroupKFold / TimeSeriesSplit, OOF array accumulation |
+| [ml-competition/experiment-tracking.md](../ml-competition/references/experiment-tracking.md) | OOF vs LB divergence diagnosis — run after this checklist passes |
+| [ml-competition/output-format.md](../ml-competition/references/output-format.md) | Metric → prediction type table — governs what Workflow 2 checks |
+| [ml-competition/common-pitfalls.md](../ml-competition/references/common-pitfalls.md) | 16 production bugs — most are variants of the leakage and metric bugs caught here |
