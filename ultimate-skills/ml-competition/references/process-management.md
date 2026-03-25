@@ -1,8 +1,3 @@
----
-name: process-management
-description: Safe launch, monitor, and deduplication patterns for long-running training scripts. Prevents duplicate processes, detects stale vs fresh artifacts, and enforces the correct PID-capture wait pattern. Invoke before launching any training run, or when confused about whether a training is in progress.
----
-
 # Process Management
 
 Training scripts can take minutes to hours. The single most costly mistake is
