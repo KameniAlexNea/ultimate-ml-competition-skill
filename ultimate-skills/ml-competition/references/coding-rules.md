@@ -1,8 +1,3 @@
----
-name: coding-rules
-description: Python coding standards for competition agents. Enforces no unused variables/imports, no dead private helpers, clear function contracts, explicit typing, and minimal technical debt. Apply when reviewing or writing `src/*.py` and `scripts/*.py` to keep code production-safe and maintainable.
----
-
 # Role and Objective
 
 Apply these Python coding standards as a hard quality gate before finalizing any change in `src/*.py` or `scripts/*.py`.
