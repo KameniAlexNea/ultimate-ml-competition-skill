@@ -1,6 +1,6 @@
 ---
 name: validation
-description: Pre-submission quality gate for ML competition pipelines. Runs three checks before any result is reported: code review (data leakage, CV contamination, metric errors), submission CSV format validation, and adversarial train/test distribution shift detection. Invoke before reporting any OOF score or submitting predictions.
+description: Pre-submission quality gate for ML competition pipelines. Runs three checks before any result is reported, code review (data leakage, CV contamination, metric errors), submission CSV format validation, and adversarial train/test distribution shift detection. Invoke before reporting any OOF score or submitting predictions.
 license: MIT
 metadata:
     skill-author: eak
