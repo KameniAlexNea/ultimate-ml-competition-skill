@@ -8,7 +8,7 @@
 
 ---
 
-A focused collection of **5 production-grade skills** covering every phase of a tabular ML competition — from project structure and feature engineering to hyperparameter tuning, ensemble meta-learning, and final submission validation. Built for AI agents that follow the open [Agent Skills](https://agentskills.io/) standard.
+A focused collection of **8 production-grade skills** covering every phase of a tabular ML competition — from project structure and feature engineering to hyperparameter tuning, ensemble meta-learning, and final submission validation. Built for AI agents that follow the open [Agent Skills](https://agentskills.io/) standard.
 
 ## 🚀 Why Use This?
 
@@ -26,10 +26,16 @@ A focused collection of **5 production-grade skills** covering every phase of a 
 
 ## What's Included
 
-| Skill                                                      | Purpose                                                                                     |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| [`ml-competition`](ultimate-skills/ml-competition/SKILL.md) | End-to-end competition pipeline — structure, training, tuning, pseudo-labeling, ensembling |
-| [`pre-submit`](ultimate-skills/validation/SKILL.md)         | Pre-submission gate — leakage check, submission file validation, adversarial validation    |
+| Skill | Purpose |
+| ----- | ------- |
+| [`ml-competition`](ultimate-skills/ml-competition/SKILL.md) | Router and overview — task-type guide, first-principles checklist, sub-skill routing |
+| [`ml-competition-setup`](ultimate-skills/ml-competition-setup/SKILL.md) | Project structure, `RunConfig` singleton, YAML orchestrator, process management |
+| [`ml-competition-features`](ultimate-skills/ml-competition-features/SKILL.md) | Feature engineering, validation strategy (GroupKFold / TimeSeriesSplit), leakage prevention |
+| [`ml-competition-training`](ultimate-skills/ml-competition-training/SKILL.md) | CB/LGB/XGB/NN training, competition metric wrappers, submission output format |
+| [`ml-competition-tuning`](ultimate-skills/ml-competition-tuning/SKILL.md) | Optuna hyperparameter tuning, `load_tuned_params` contract, per-model search spaces |
+| [`ml-competition-advanced`](ultimate-skills/ml-competition-advanced/SKILL.md) | Pseudo-labeling, ensemble meta-learning, post-processing/calibration, experiment tracking |
+| [`ml-competition-quality`](ultimate-skills/ml-competition-quality/SKILL.md) | Code quality gate — no dead code, clear contracts; 16 production bug patterns |
+| [`ml-competition-pre-submit`](ultimate-skills/ml-competition-pre-submit/SKILL.md) | Pre-submission gate — leakage check, submission file validation, adversarial validation |
 
 ---
 
