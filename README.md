@@ -42,7 +42,7 @@ A focused collection of **8 production-grade skills** covering every phase of a 
 ## Install
 
 ```bash
-git clone https://github.com/your-username/ultimate-ml-competition-skill.git
+git clone https://github.com/KameniAlexNea/ultimate-ml-competition-skill.git
 
 # Global (Claude Code)
 cp -r ultimate-ml-competition-skill/ultimate-skills/* ~/.claude/skills/
