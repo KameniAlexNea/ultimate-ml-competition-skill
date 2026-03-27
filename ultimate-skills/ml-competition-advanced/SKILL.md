@@ -73,9 +73,9 @@ These depend on all earlier pipeline steps being complete and stable:
 
 | Skill | When to use it instead |
 |-------|------------------------|
-| [ml-competition](../ml-competition/SKILL.md) | Full pipeline overview, task type decision guide, first-principles checklist |
-| [ml-competition-setup](../ml-competition-setup/SKILL.md) | Project structure, RunConfig, process management |
-| [ml-competition-features](../ml-competition-features/SKILL.md) | Feature engineering, validation strategy |
-| [ml-competition-training](../ml-competition-training/SKILL.md) | Base model training, competition metrics, output format |
-| [ml-competition-tuning](../ml-competition-tuning/SKILL.md) | Optuna hyperparameter tuning |
-| [ml-competition-quality](../ml-competition-quality/SKILL.md) | Coding rules, common pitfalls |
+| `ml-competition` | Full pipeline overview, task type decision guide, first-principles checklist |
+| `ml-competition-setup` | Project structure, RunConfig, process management |
+| `ml-competition-features` | Feature engineering, validation strategy |
+| `ml-competition-training` | Base model training, competition metrics, output format |
+| `ml-competition-tuning` | Optuna hyperparameter tuning |
+| `ml-competition-quality` | Coding rules, common pitfalls |

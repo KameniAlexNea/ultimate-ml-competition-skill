@@ -67,9 +67,9 @@ The `_best.json` format must always be `{"value": float, "params": {...}, "trial
 
 | Skill | When to use it instead |
 |-------|------------------------|
-| [ml-competition](../ml-competition/SKILL.md) | Full pipeline overview, task type decision guide, first-principles checklist |
-| [ml-competition-setup](../ml-competition-setup/SKILL.md) | Project structure, RunConfig, process management |
-| [ml-competition-training](../ml-competition-training/SKILL.md) | Base model training, metrics, output format |
-| [ml-competition-features](../ml-competition-features/SKILL.md) | Feature engineering, validation strategy |
-| [ml-competition-advanced](../ml-competition-advanced/SKILL.md) | Pseudo-labeling, ensemble, post-processing, experiment tracking |
-| [ml-competition-quality](../ml-competition-quality/SKILL.md) | Coding rules, common pitfalls |
+| `ml-competition` | Full pipeline overview, task type decision guide, first-principles checklist |
+| `ml-competition-setup` | Project structure, RunConfig, process management |
+| `ml-competition-training` | Base model training, metrics, output format |
+| `ml-competition-features` | Feature engineering, validation strategy |
+| `ml-competition-advanced` | Pseudo-labeling, ensemble, post-processing, experiment tracking |
+| `ml-competition-quality` | Coding rules, common pitfalls |

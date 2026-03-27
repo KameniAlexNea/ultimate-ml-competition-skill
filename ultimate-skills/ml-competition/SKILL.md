@@ -47,20 +47,20 @@ This skill is **not** for NLP or CV competitions.
 Complete in this exact order — each step links to the sub-skill that covers it:
 
 1. [ ] Identify **task type** (binary/regression/multiclass/multi-label/ranking) and read the leaderboard formula carefully — *(this file)*
-2. [ ] Implement **competition metric** exactly — single function, unit-tested → [ml-competition-training](../ml-competition-training/SKILL.md)
-3. [ ] Wrap metric for every framework (CB / LGB / XGB / NN) → [ml-competition-training](../ml-competition-training/SKILL.md)
-4. [ ] Choose **CV split** (GroupKFold / StratifiedKFold / TimeSeriesSplit / KFold) → [ml-competition-features](../ml-competition-features/SKILL.md)
-5. [ ] Build **feature pipeline** with versioned cache; bump version on any change → [ml-competition-features](../ml-competition-features/SKILL.md)
-6. [ ] Build **model matrices** — single `build_model_matrices()`, process-level cache → [ml-competition-features](../ml-competition-features/SKILL.md)
-7. [ ] Create **RunConfig dataclass** singleton; scaffold package layout → [ml-competition-setup](../ml-competition-setup/SKILL.md)
-8. [ ] Write **base model entrypoints** with `tune_dir=None` param → [ml-competition-training](../ml-competition-training/SKILL.md)
-9. [ ] Set up **`load_tuned_params`** returning full JSON dict → [ml-competition-tuning](../ml-competition-tuning/SKILL.md)
-10. [ ] Set up **Optuna** with identical folds/metrics to training → [ml-competition-tuning](../ml-competition-tuning/SKILL.md)
-11. [ ] Write **OOF save/load** with versioned tags → [ml-competition-advanced](../ml-competition-advanced/SKILL.md)
-12. [ ] Add **pseudo-labeling** only after base models converge → [ml-competition-advanced](../ml-competition-advanced/SKILL.md)
-13. [ ] Add **meta ensemble** after pseudo converges → [ml-competition-advanced](../ml-competition-advanced/SKILL.md)
-14. [ ] Wire everything in **YAML orchestrator** with resume-by-existence logic → [ml-competition-setup](../ml-competition-setup/SKILL.md)
-15. [ ] Add **calibration** as optional post-meta pass — verify OOF gain, keep disabled by default → [ml-competition-advanced](../ml-competition-advanced/SKILL.md)
+2. [ ] Implement **competition metric** exactly — single function, unit-tested → `ml-competition-training`
+3. [ ] Wrap metric for every framework (CB / LGB / XGB / NN) → `ml-competition-training`
+4. [ ] Choose **CV split** (GroupKFold / StratifiedKFold / TimeSeriesSplit / KFold) → `ml-competition-features`
+5. [ ] Build **feature pipeline** with versioned cache; bump version on any change → `ml-competition-features`
+6. [ ] Build **model matrices** — single `build_model_matrices()`, process-level cache → `ml-competition-features`
+7. [ ] Create **RunConfig dataclass** singleton; scaffold package layout → `ml-competition-setup`
+8. [ ] Write **base model entrypoints** with `tune_dir=None` param → `ml-competition-training`
+9. [ ] Set up **`load_tuned_params`** returning full JSON dict → `ml-competition-tuning`
+10. [ ] Set up **Optuna** with identical folds/metrics to training → `ml-competition-tuning`
+11. [ ] Write **OOF save/load** with versioned tags → `ml-competition-advanced`
+12. [ ] Add **pseudo-labeling** only after base models converge → `ml-competition-advanced`
+13. [ ] Add **meta ensemble** after pseudo converges → `ml-competition-advanced`
+14. [ ] Wire everything in **YAML orchestrator** with resume-by-existence logic → `ml-competition-setup`
+15. [ ] Add **calibration** as optional post-meta pass — verify OOF gain, keep disabled by default → `ml-competition-advanced`
 
 ---
 
@@ -68,9 +68,10 @@ Complete in this exact order — each step links to the sub-skill that covers it
 
 | Sub-Skill | When to load it |
 |-----------|----------------|
-| [ml-competition-setup](../ml-competition-setup/SKILL.md) | Scaffolding project, RunConfig, YAML orchestrator, process management (pre-flight, PID tracking) |
-| [ml-competition-features](../ml-competition-features/SKILL.md) | Feature engineering, validation strategy, OOF leakage, cache discipline |
-| [ml-competition-training](../ml-competition-training/SKILL.md) | Model training (CB/LGB/XGB/NN), competition metric wrappers, submission output format |
-| [ml-competition-tuning](../ml-competition-tuning/SKILL.md) | Optuna hyperparameter tuning, load_tuned_params contract, search spaces |
-| [ml-competition-advanced](../ml-competition-advanced/SKILL.md) | Pseudo-labeling, ensemble meta-learning, post-processing/calibration, experiment tracking |
-| [ml-competition-quality](../ml-competition-quality/SKILL.md) | Code review, 6-rule quality gate, 16 production bug patterns |
+| `ml-competition-setup` | Scaffolding project, RunConfig, YAML orchestrator, process management (pre-flight, PID tracking) |
+| `ml-competition-features` | Feature engineering, validation strategy, OOF leakage, cache discipline |
+| `ml-competition-training` | Model training (CB/LGB/XGB/NN), competition metric wrappers, submission output format |
+| `ml-competition-tuning` | Optuna hyperparameter tuning, load_tuned_params contract, search spaces |
+| `ml-competition-advanced` | Pseudo-labeling, ensemble meta-learning, post-processing/calibration, experiment tracking |
+| `ml-competition-quality` | Code review, 6-rule quality gate, 16 production bug patterns |
+| `ml-competition-pre-submit` | Pre-submission gate — leakage check, submission file validation, adversarial validation |
