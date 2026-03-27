@@ -1,5 +1,5 @@
 ---
-name: pre-submit
+name: ml-competition-pre-submit
 description: Pre-submission quality gate for ML competition pipelines. Runs three checks before any result is reported, code review (data leakage, CV contamination, metric errors), submission CSV format validation, and adversarial train/test distribution shift detection. Invoke before reporting any OOF score or submitting predictions.
 license: MIT
 metadata:
@@ -232,9 +232,9 @@ Platform returns 0.0 or error despite local validation passing. Common cause: in
 
 ## See Also
 
-| Skill / File                                                                              | Why                                                                                |
-| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [ml-competition/validation-strategy.md](../ml-competition/references/validation-strategy.md) | CV split strategy — GroupKFold / TimeSeriesSplit, OOF array accumulation          |
-| [ml-competition/experiment-tracking.md](../ml-competition/references/experiment-tracking.md) | OOF vs LB divergence diagnosis — run after this checklist passes                  |
-| [ml-competition/output-format.md](../ml-competition/references/output-format.md)             | Metric → prediction type table — governs what Workflow 2 checks                  |
-| [ml-competition/common-pitfalls.md](../ml-competition/references/common-pitfalls.md)         | 16 production bugs — most are variants of the leakage and metric bugs caught here |
+| Skill | Why |
+| ----- | --- |
+| `ml-competition-features` | CV split strategy — GroupKFold / TimeSeriesSplit, OOF array accumulation |
+| `ml-competition-advanced` | OOF vs LB divergence diagnosis — run after this checklist passes |
+| `ml-competition-training` | Metric → prediction type table — governs what Workflow 2 checks |
+| `ml-competition-quality` | 16 production bugs — most are variants of the leakage and metric bugs caught here |
