@@ -33,9 +33,14 @@ The pipeline is organized in two layers:
 
 ```
 ultimate-skills/
-├── skills/          # 43 on-demand skill files
-└── agents/          # 11 specialized agent definitions
+├── skills/          # 43 on-demand skill files (Claude Code / Codex / VS Code)
+└── agents/          # 11 specialized agent definitions (Claude Code / Codex format)
+
+scripts/
+└── generate_vscode_agents.sh   # converts agents to VS Code frontmatter format
 ```
+
+> **VS Code users**: the agent files in `ultimate-skills/agents/` use Claude Code / Codex frontmatter. Run [`scripts/generate_vscode_agents.sh`](scripts/generate_vscode_agents.sh) to generate VS Code-compatible versions before installing.
 
 ---
 
@@ -192,20 +197,92 @@ Agents are specialized workers with strict scope boundaries. Each owns one phase
 
 ```bash
 git clone https://github.com/KameniAlexNea/ultimate-ml-competition-skill.git
-
-# Global install (Claude Code)
-cp -r ultimate-ml-competition-skill/ultimate-skills/skills/* ~/.claude/skills/
-cp -r ultimate-ml-competition-skill/ultimate-skills/agents/* ~/.claude/agents/
-
-# Project-level install
-cp -r ultimate-ml-competition-skill/ultimate-skills/skills/* .claude/skills/
-cp -r ultimate-ml-competition-skill/ultimate-skills/agents/* .claude/agents/
+cd ultimate-ml-competition-skill
 ```
 
-Other agents: Cursor → `.cursor/skills/` and `.cursor/agents/`, Codex → `.codex/skills/`, Gemini CLI → `.gemini/skills/`
+### Claude Code / Codex (default format)
+
+```bash
+# Global install
+cp -r ultimate-skills/skills/* ~/.claude/skills/
+cp -r ultimate-skills/agents/* ~/.claude/agents/
+
+# Project-level
+cp -r ultimate-skills/skills/* .claude/skills/
+cp -r ultimate-skills/agents/* .claude/agents/
+```
+
+### VS Code Copilot
+
+The agent files in `ultimate-skills/agents/` use Claude Code / Codex frontmatter. Run the generator script to produce VS Code-compatible versions before copying:
+
+```bash
+# Generate VS Code agents into .github/agents/ (default, auto-detected by VS Code)
+bash scripts/generate_vscode_agents.sh
+
+# Or generate into a custom location (e.g. user profile)
+bash scripts/generate_vscode_agents.sh ~/.copilot/agents
+```
+
+Then copy the skills (no conversion needed — `SKILL.md` format is the same):
+
+```bash
+# Project-level
+cp -r ultimate-skills/skills/* .github/skills/
+
+# User profile (available in all workspaces)
+cp -r ultimate-skills/skills/* ~/.copilot/skills/
+```
+
+Other agents: Cursor → `.cursor/skills/` and `.cursor/agents/`, Gemini CLI → `.gemini/skills/`
+
+---
+
+## Use in VS Code
+
+### How skills and agents are resolved
+
+VS Code reads skills from `.github/skills/` or `~/.copilot/skills/` and agents from `.github/agents/` or `~/.copilot/agents/`. After the setup above, skills appear as `/` slash commands in the Chat view and the `team-lead` agent appears in the agent picker dropdown.
+
+### Start a competition run
+
+1. Open a new chat and select **`team-lead`** from the agents dropdown.
+2. Describe the competition — paste the competition summary, a link to the brief, or point to the data folder.
+3. `team-lead` orchestrates the full pipeline. It invokes all specialist agents as subagents in dependency order: `research-analyst` → `infrastructure-expert` → `data-processing-expert` → ... → `ml-competition-pre-submit`.
+
+### Enable the subagent pattern
+
+`team-lead` delegates work using VS Code's subagent feature. The `agent` tool must be enabled in your chat session (it is on by default in agent mode). Each subagent runs in isolated context and reports its result back via `EXPERIMENT_STATE.json`.
+
+To allow specialist agents to invoke further subagents if needed, enable:
+
+```
+chat.subagents.allowInvocationsFromSubagents = true
+```
+
+### Specialist agents are subagent-only
+
+All 10 specialist agents are set to `user-invocable: false` — they do not appear in the dropdown and can only be invoked by the `team-lead`. To work with a specialist directly, start from `team-lead` and ask it to delegate to the specific specialist.
+
+### Load a skill on demand
+
+Skills can be invoked as slash commands at any point during a session:
+
+```
+/ml-competition-features    Derive lag and rolling features for the timestamp columns.
+/shap                       Explain the top-20 features driving predictions.
+/exploratory-data-analysis  Profile the test set for distribution shift.
+```
+
+VS Code loads only the relevant `SKILL.md` into context — no token cost for skills you don't use.
+
+### Resume an interrupted run
+
+After each phase the active agent writes its result to `EXPERIMENT_STATE.json`. `team-lead` reads that file at startup and skips any step already marked `"success"`, so you can resume without restarting from scratch.
 
 ---
 
 ## License
 
 [MIT](LICENSE)
+
