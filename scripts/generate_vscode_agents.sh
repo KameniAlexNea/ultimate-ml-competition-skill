@@ -62,26 +62,37 @@ _SPECIALIST_TOOLS = (
     "ms-toolsai.jupyter/installNotebookPackages, todo]"
 )
 
+_ORCHESTRATOR_TOOLS = "[vscode, read, agent, search, web, browser, todo]"
+
 VSCODE_TOOLS = {
-    "team-lead":             "[vscode, read, agent, search, web, browser, todo]",
-    "research-analyst":      _SPECIALIST_TOOLS,
-    "infrastructure-expert": _SPECIALIST_TOOLS,
-    "data-processing-expert":_SPECIALIST_TOOLS,
-    "visualization-expert":  _SPECIALIST_TOOLS,
-    "ml-statistics-expert":  _SPECIALIST_TOOLS,
-    "time-series-expert":    _SPECIALIST_TOOLS,
-    "graph-ml-expert":       _SPECIALIST_TOOLS,
-    "deep-learning-expert":  _SPECIALIST_TOOLS,
-    "rl-expert":             _SPECIALIST_TOOLS,
-    "specialized-ml-expert": _SPECIALIST_TOOLS,
+    # Orchestrators — coordinate agents, do not write model/data code
+    "team-lead":                  _ORCHESTRATOR_TOOLS,
+    "data-pipeline-expert":       _ORCHESTRATOR_TOOLS,
+    "mle-expert":                 _ORCHESTRATOR_TOOLS,
+    # Specialists — full tool access
+    "research-analyst":           _SPECIALIST_TOOLS,
+    "setup-expert":               _SPECIALIST_TOOLS,
+    "data-processing-expert":     _SPECIALIST_TOOLS,
+    "visualization-expert":       _SPECIALIST_TOOLS,
+    "feature-engineering-expert": _SPECIALIST_TOOLS,
+    "baseline-expert":            _SPECIALIST_TOOLS,
+    "gradient-boosting-expert":   _SPECIALIST_TOOLS,
+    "deep-learning-expert":       _SPECIALIST_TOOLS,
+    "time-series-expert":         _SPECIALIST_TOOLS,
+    "graph-ml-expert":            _SPECIALIST_TOOLS,
+    "rl-expert":                  _SPECIALIST_TOOLS,
+    "specialized-ml-expert":      _SPECIALIST_TOOLS,
+    "ensemble-expert":            _SPECIALIST_TOOLS,
 }
 
 SPECIALIST_NAMES = [k for k in VSCODE_TOOLS if k != "team-lead"]
 
 TEAM_LEAD_AGENTS = (
-    "agents: ['research-analyst', 'infrastructure-expert', 'data-processing-expert', "
-    "'visualization-expert', 'ml-statistics-expert', 'time-series-expert', "
-    "'graph-ml-expert', 'deep-learning-expert', 'rl-expert', 'specialized-ml-expert']"
+    "agents: ['research-analyst', 'setup-expert', 'data-pipeline-expert', "
+    "'data-processing-expert', 'visualization-expert', 'feature-engineering-expert', "
+    "'baseline-expert', 'mle-expert', 'gradient-boosting-expert', "
+    "'deep-learning-expert', 'time-series-expert', 'graph-ml-expert', "
+    "'rl-expert', 'specialized-ml-expert', 'ensemble-expert']"
 )
 
 # ---------------------------------------------------------------------------
@@ -109,7 +120,7 @@ for src_path in sorted(source_dir.glob("*.agent.md")):
     fm_lines = [
         f"name: {name_val}",
         f"description: {desc_val}",
-        f"tools: {VSCODE_TOOLS.get(stem, VSCODE_TOOLS['data-processing-expert'])}",
+        f"tools: {VSCODE_TOOLS.get(stem, _SPECIALIST_TOOLS)}",
     ]
     if stem == "team-lead":
         fm_lines.append(TEAM_LEAD_AGENTS)
