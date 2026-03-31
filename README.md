@@ -212,16 +212,30 @@ git clone https://github.com/KameniAlexNea/ultimate-ml-competition-skill.git
 cd ultimate-ml-competition-skill
 ```
 
-### Claude Code / Codex (default format)
+### Claude Code (recommended — source format)
+
+Use the install script — it copies agents and skills to `.claude/` and renames `AGENTS.md` to `CLAUDE.md` automatically:
 
 ```bash
-# Global install
-cp -r ultimate-skills/skills/* ~/.claude/skills/
-cp -r ultimate-skills/agents/* ~/.claude/agents/
+# Project-level (installs into .claude/ in your competition folder)
+bash scripts/install_claude_agents.sh
 
+# Global (available in all Claude Code projects)
+bash scripts/install_claude_agents.sh global
+```
+
+Or install manually:
+
+```bash
 # Project-level
-cp -r ultimate-skills/skills/* .claude/skills/
 cp -r ultimate-skills/agents/* .claude/agents/
+cp -r ultimate-skills/skills/* .claude/skills/
+cp ultimate-skills/AGENTS.md .claude/CLAUDE.md
+
+# Global
+cp -r ultimate-skills/agents/* ~/.claude/agents/
+cp -r ultimate-skills/skills/* ~/.claude/skills/
+cp ultimate-skills/AGENTS.md ~/.claude/CLAUDE.md
 ```
 
 ### VS Code Copilot
@@ -247,6 +261,8 @@ cp -r ultimate-skills/skills/* ~/.copilot/skills/
 ```
 
 Other agents: Cursor → `.cursor/skills/` and `.cursor/agents/`, Gemini CLI → `.gemini/skills/`
+
+> **`AGENTS.md` filename**: VS Code Copilot and Codex read `AGENTS.md` automatically. Claude Code reads `CLAUDE.md`. The `install_claude_agents.sh` script handles this rename. For manual installs: `cp ultimate-skills/AGENTS.md .claude/CLAUDE.md`.
 
 ---
 

@@ -2,7 +2,8 @@
 # generate_vscode_agents.sh
 #
 # Generates VS Code-compatible .agent.md files from the canonical Claude Code
-# agent definitions in ultimate-skills/agents/.
+# agent definitions in ultimate-skills/agents/, and copies skills to the
+# matching skills/ directory beside the agents output.
 #
 # The source files use Claude Code / Codex frontmatter format:
 #   tools: Read, Write, Edit, MultiEdit, Bash, Glob, Grep, Skill
@@ -20,6 +21,7 @@
 #
 # Defaults:
 #   output_dir = .github/agents      (workspace-level, picked up by VS Code automatically)
+#   skills are copied to   .github/skills/
 #
 # Other common destinations:
 #   .github/agents     workspace — available to all workspace users (default)
@@ -29,12 +31,14 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-SOURCE_DIR="$REPO_ROOT/ultimate-skills/agents"
+SOURCE_AGENTS="$REPO_ROOT/ultimate-skills/agents"
+SOURCE_SKILLS="$REPO_ROOT/ultimate-skills/skills"
 OUTPUT_DIR="${1:-$REPO_ROOT/.github/agents}"
+SKILLS_DIR="$(dirname "$OUTPUT_DIR")/skills"
 
-mkdir -p "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR" "$SKILLS_DIR"
 
-python3 - "$SOURCE_DIR" "$OUTPUT_DIR" << 'PYEOF'
+python3 - "$SOURCE_AGENTS" "$OUTPUT_DIR" << 'PYEOF'
 import sys, re, pathlib, textwrap
 
 source_dir = pathlib.Path(sys.argv[1])
@@ -134,3 +138,22 @@ for src_path in sorted(source_dir.glob("*.agent.md")):
 
 print(f"\nDone — {len(list(output_dir.glob('*.agent.md')))} agent files written to {output_dir}")
 PYEOF
+
+# ---------------------------------------------------------------------------
+# Copy skills (no conversion needed — SKILL.md format is the same for VS Code)
+# ---------------------------------------------------------------------------
+echo "Copying skills → $SKILLS_DIR"
+find "$SOURCE_SKILLS" -name "SKILL.md" | while read -r skill_file; do
+    skill_name="$(basename "$(dirname "$skill_file")")"
+    dest_dir="$SKILLS_DIR/$skill_name"
+    mkdir -p "$dest_dir"
+    cp "$skill_file" "$dest_dir/SKILL.md"
+    for subdir in references assets scripts; do
+        src_sub="$(dirname "$skill_file")/$subdir"
+        if [ -d "$src_sub" ]; then
+            cp -r "$src_sub" "$dest_dir/"
+        fi
+    done
+done
+SKILL_COUNT=$(find "$SOURCE_SKILLS" -name "SKILL.md" | wc -l | tr -d ' ')
+echo "  $SKILL_COUNT skill directories copied"

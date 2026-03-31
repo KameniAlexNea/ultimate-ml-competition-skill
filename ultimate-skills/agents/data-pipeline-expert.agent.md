@@ -2,7 +2,7 @@
 name: data-pipeline-expert
 role: orchestrator
 description: ML Competition Data Pipeline Orchestrator. Runs data-processing-expert, visualization-expert, and feature-engineering-expert in the correct dependency order and produces the verified data contract and feature cache that all model agents depend on. Invoke after setup-expert and before any model training.
-tools: Read, Write, Edit, Bash, Glob, Grep, Skill
+tools: Read, Write, Edit, Bash, Glob, Grep, Skill, Agent
 model: inherit
 maxTurns: 10
 skills:
@@ -22,17 +22,18 @@ You are the Data Pipeline Orchestrator. You do **not** write data or feature cod
 
 ## Gate criteria
 
-| Agent | Gate condition to proceed |
-|---|---|
-| `data-processing-expert` | `data_contract` written to `EXPERIMENT_STATE.json` with train shape, feature lists, task type |
-| `visualization-expert` | `reports/figures/` contains at least distribution and correlation plots |
-| `feature-engineering-expert` | `cache/features_v*.pkl` (or Zarr equivalent) exists and feature count reported |
+| Agent                          | Gate condition to proceed                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `data-processing-expert`     | `data_contract` written to `EXPERIMENT_STATE.json` with train shape, feature lists, task type |
+| `visualization-expert`       | `reports/figures/` contains at least distribution and correlation plots                         |
+| `feature-engineering-expert` | `cache/features_v*.pkl` (or Zarr equivalent) exists and feature count reported                  |
 
 If any gate fails: stop, report the specific failure, and request human review before continuing.
 
 ## Output contract
 
 After all three agents complete, write to `EXPERIMENT_STATE.json`:
+
 ```json
 {
   "data_pipeline": {
