@@ -8,7 +8,7 @@
 
 ---
 
-A production-grade collection of **43 skills** and **11 specialized agents** covering every phase of a tabular ML competition pipeline — from research and data profiling to training, tuning, ensemble, and final submission. Built for AI agents following the open [Agent Skills](https://agentskills.io/) standard.
+A production-grade collection of **43 skills** and **16 specialized agents** covering every phase of a tabular ML competition pipeline — from research and data profiling to training, tuning, ensemble, and final submission. Built for AI agents following the open [Agent Skills](https://agentskills.io/) standard.
 
 The pipeline is organized in two layers:
 
@@ -33,14 +33,19 @@ The pipeline is organized in two layers:
 
 ```
 ultimate-skills/
+├── AGENTS.md        # shared pipeline instructions (rename to CLAUDE.md for Claude Code)
 ├── skills/          # 43 on-demand skill files (Claude Code / Codex / VS Code)
-└── agents/          # 11 specialized agent definitions (Claude Code / Codex format)
+└── agents/          # 16 specialized agent definitions (Claude Code / Codex format)
 
 scripts/
 └── generate_vscode_agents.sh   # converts agents to VS Code frontmatter format
 ```
 
+> **Filename convention for `AGENTS.md`:** VS Code Copilot and Codex read `AGENTS.md` automatically. Claude Code reads `CLAUDE.md`. Rename the file to match your tool, or symlink it: `ln -s AGENTS.md CLAUDE.md`.
+
 > **VS Code users**: the agent files in `ultimate-skills/agents/` use Claude Code / Codex frontmatter. Run [`scripts/generate_vscode_agents.sh`](scripts/generate_vscode_agents.sh) to generate VS Code-compatible versions before installing.
+>
+> **`AGENTS.md` filename**: VS Code Copilot and Codex read `AGENTS.md` automatically. Claude Code reads `CLAUDE.md`. Rename or symlink to match your tool: `ln -s ultimate-skills/AGENTS.md ultimate-skills/CLAUDE.md`.
 
 ---
 
@@ -163,33 +168,40 @@ Agents are specialized workers with strict scope boundaries. Each owns one phase
 ### Execution order and worker agents
 
 ```
-1. research-analyst          always — research and hypothesis bank before any code
-2. infrastructure-expert     always — hardware profiling before any heavy computation
-3. data-processing-expert    always — verified data contract
-4. visualization-expert      always — full diagnostic figure suite
-5. ml-statistics-expert      always — statistical baselines and SHAP audit
-6. ─ conditional ────────────────────────────────────────────────────────────
-   time-series-expert         if TIMESTAMP_FEATURES are present
-   graph-ml-expert            if entity relationship columns are present
-   deep-learning-expert       if text/embedding columns present or NN requested
-   rl-expert                  if the competition is simulation-based
-   specialized-ml-expert      if survival targets, Pareto metric, or symbolic features
-7. ml-competition sub-skills  training → tuning → advanced
-8. ml-competition-pre-submit  always — mandatory gate before final submission
+1. research-analyst           always — research and hypothesis bank before any code
+2. setup-expert               always — project scaffold, config, hardware profiling
+3. data-pipeline-expert       always — orchestrates the data sub-pipeline:
+   ├── data-processing-expert   verified data contract, EDA, leakage/drift profiling
+   ├── visualization-expert     full diagnostic figure suite
+   └── feature-engineering-expert  versioned feature cache
+4. baseline-expert            always — sklearn baselines, SHAP audit, score floor
+5. mle-expert                 always — conditional model router:
+   ├── gradient-boosting-expert  if tabular classification or regression
+   ├── time-series-expert        if TIMESTAMP_FEATURES are present
+   ├── graph-ml-expert           if entity relationship columns are present
+   ├── deep-learning-expert      if text/embedding columns present
+   ├── rl-expert                 if the competition is simulation-based
+   └── specialized-ml-expert     if survival targets, Pareto metric, or symbolic features
+6. ensemble-expert            always — OOF blend/stack, pre-submit gate, final submission
 ```
 
-| Agent | Skills used | Scope |
-| ----- | ----------- | ----- |
-| [`research-analyst`](ultimate-skills/agents/research-analyst.agent.md) | `scientific-critical-thinking`, `hypothesis-generation`, `scientific-brainstorming`, `literature-review`, `arxiv-database`, `hypogenic`, `what-if-oracle` | Literature mining, hypothesis bank, experiment roadmap |
-| [`infrastructure-expert`](ultimate-skills/agents/infrastructure-expert.agent.md) | `get-available-resources`, `modal`, `zarr-python`, `dask`, `vaex` | Hardware profiling, OOM guard, Zarr storage, Modal cloud offload |
-| [`data-processing-expert`](ultimate-skills/agents/data-processing-expert.agent.md) | `exploratory-data-analysis`, `statistical-analysis`, `polars`, `dask`, `vaex` | Data contract, EDA, leakage/drift/imbalance/missing profiling |
-| [`visualization-expert`](ultimate-skills/agents/visualization-expert.agent.md) | `matplotlib`, `seaborn`, `plotly`, `scientific-visualization`, `umap-learn` | Diagnostic figures, UMAP embeddings, feature distributions |
-| [`ml-statistics-expert`](ultimate-skills/agents/ml-statistics-expert.agent.md) | `scikit-learn`, `shap`, `statistical-analysis`, `statsmodels`, `pymc` | Statistical baselines, assumption tests, SHAP audit, Bayesian models |
-| [`time-series-expert`](ultimate-skills/agents/time-series-expert.agent.md) | `timesfm-forecasting`, `aeon`, `statistical-analysis`, `statsmodels` | Temporal CV, lag/rolling features, TimesFM baseline, stationarity checks |
-| [`graph-ml-expert`](ultimate-skills/agents/graph-ml-expert.agent.md) | `networkx`, `torch-geometric` | Graph construction, node features, GNN training |
-| [`deep-learning-expert`](ultimate-skills/agents/deep-learning-expert.agent.md) | `pytorch-lightning`, `transformers` | Tabular MLP, transformer text encoder, OOF fold predictions |
-| [`rl-expert`](ultimate-skills/agents/rl-expert.agent.md) | `stable-baselines3`, `pufferlib`, `get-available-resources` | Gym environment wrapper, PPO/SAC training, policy evaluation |
-| [`specialized-ml-expert`](ultimate-skills/agents/specialized-ml-expert.agent.md) | `scikit-survival`, `pymoo`, `sympy` | Survival analysis, Pareto threshold tuning, symbolic features |
+| Agent | Role | Skills used |
+| ----- | ---- | ----------- |
+| [`research-analyst`](ultimate-skills/agents/research-analyst.agent.md) | Literature mining, hypothesis bank, experiment roadmap | `scientific-critical-thinking`, `hypothesis-generation`, `scientific-brainstorming`, `literature-review`, `arxiv-database`, `hypogenic`, `what-if-oracle` |
+| [`setup-expert`](ultimate-skills/agents/setup-expert.agent.md) | Project scaffold, `RunConfig`, hardware profiling, OOM guard, Zarr storage, Modal offload | `ml-competition-setup`, `ml-competition-quality`, `get-available-resources`, `modal`, `zarr-python` |
+| [`data-pipeline-expert`](ultimate-skills/agents/data-pipeline-expert.agent.md) | Orchestrates data → visualization → feature sub-pipeline | `ml-competition` |
+| [`data-processing-expert`](ultimate-skills/agents/data-processing-expert.agent.md) | Data contract, EDA, leakage/drift/imbalance/missing profiling | `exploratory-data-analysis`, `statistical-analysis`, `polars`, `dask`, `vaex` |
+| [`visualization-expert`](ultimate-skills/agents/visualization-expert.agent.md) | Diagnostic figures, UMAP embeddings, feature distributions | `matplotlib`, `seaborn`, `plotly`, `scientific-visualization`, `umap-learn` |
+| [`feature-engineering-expert`](ultimate-skills/agents/feature-engineering-expert.agent.md) | Aggregations, target encodings, interactions, feature selection, versioned cache | `ml-competition-features`, `polars`, `scikit-learn` |
+| [`baseline-expert`](ultimate-skills/agents/baseline-expert.agent.md) | sklearn baselines, statistical assumption tests, SHAP audit, Bayesian models | `scikit-learn`, `shap`, `statistical-analysis`, `statsmodels`, `pymc` |
+| [`mle-expert`](ultimate-skills/agents/mle-expert.agent.md) | Reads data contract, conditionally invokes model agents | `ml-competition` |
+| [`gradient-boosting-expert`](ultimate-skills/agents/gradient-boosting-expert.agent.md) | LightGBM / XGBoost / CatBoost training + Optuna tuning, OOF predictions | `ml-competition-training`, `ml-competition-tuning` |
+| [`time-series-expert`](ultimate-skills/agents/time-series-expert.agent.md) | Temporal CV, lag/rolling features, TimesFM baseline, stationarity checks | `timesfm-forecasting`, `aeon`, `statistical-analysis`, `statsmodels` |
+| [`graph-ml-expert`](ultimate-skills/agents/graph-ml-expert.agent.md) | Graph construction, node features, GNN training | `networkx`, `torch-geometric` |
+| [`deep-learning-expert`](ultimate-skills/agents/deep-learning-expert.agent.md) | Tabular MLP, transformer text encoder, OOF fold predictions | `pytorch-lightning`, `transformers` |
+| [`rl-expert`](ultimate-skills/agents/rl-expert.agent.md) | Gym environment wrapper, PPO/SAC training, policy evaluation | `stable-baselines3`, `pufferlib`, `get-available-resources` |
+| [`specialized-ml-expert`](ultimate-skills/agents/specialized-ml-expert.agent.md) | Survival analysis, Pareto threshold tuning, symbolic features | `scikit-survival`, `pymoo`, `sympy` |
+| [`ensemble-expert`](ultimate-skills/agents/ensemble-expert.agent.md) | OOF greedy selection, weighted blend, meta-stacking, pre-submit gate, final submission | `ml-competition-advanced`, `ml-competition-pre-submit`, `scikit-learn` |
 
 ---
 
@@ -248,7 +260,7 @@ VS Code reads skills from `.github/skills/` or `~/.copilot/skills/` and agents f
 
 1. Open a new chat and select **`team-lead`** from the agents dropdown.
 2. Describe the competition — paste the competition summary, a link to the brief, or point to the data folder.
-3. `team-lead` orchestrates the full pipeline. It invokes all specialist agents as subagents in dependency order: `research-analyst` → `infrastructure-expert` → `data-processing-expert` → ... → `ml-competition-pre-submit`.
+3. `team-lead` orchestrates the full pipeline. It invokes all specialist agents as subagents in dependency order: `research-analyst` → `setup-expert` → `data-pipeline-expert` → `baseline-expert` → `mle-expert` → `ensemble-expert`.
 
 ### Enable the subagent pattern
 
@@ -262,7 +274,7 @@ chat.subagents.allowInvocationsFromSubagents = true
 
 ### Specialist agents are subagent-only
 
-All 10 specialist agents are set to `user-invocable: false` — they do not appear in the dropdown and can only be invoked by the `team-lead`. To work with a specialist directly, start from `team-lead` and ask it to delegate to the specific specialist.
+All 15 specialist agents are set to `user-invocable: false` — they do not appear in the dropdown and can only be invoked by `team-lead` or their parent orchestrators (`data-pipeline-expert`, `mle-expert`). To work with a specialist directly, start from `team-lead` and ask it to delegate to the specific specialist.
 
 ### Load a skill on demand
 
