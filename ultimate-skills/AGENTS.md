@@ -15,49 +15,53 @@ Begin each task with a concise checklist (3–7 bullets) of the conceptual steps
 ```mermaid
 graph LR
     subgraph Always
-    RA[research-analyst] --> IE[infrastructure-expert]
-    IE --> DP[data-processing-expert]
-    DP --> VE[visualization-expert]
-    VE --> MS[ml-statistics-expert]
+    RA[research-analyst] --> SE[setup-expert]
+    SE --> DP[data-pipeline-expert]
+    DP --> BE[baseline-expert]
     end
 
-    subgraph Conditional
-    MS -.->|timestamp cols| TS[time-series-expert]
-    MS -.->|entity cols| GM[graph-ml-expert]
-    MS -.->|text / NN| DL[deep-learning-expert]
-    MS -.->|simulation| RL[rl-expert]
-    MS -.->|survival / pareto / symbolic| SP[specialized-ml-expert]
+    subgraph data-pipeline-expert
+    DPE[data-processing-expert] --> VE[visualization-expert]
+    VE --> FE[feature-engineering-expert]
     end
 
-    subgraph Training
-    MS --> TR[ml-competition training pipeline]
-    TS --> TR
-    GM --> TR
-    DL --> TR
-    RL --> TR
-    SP --> TR
+    subgraph mle-expert
+    BE --> MLE[mle-expert]
+    MLE -.->|tabular| GB[gradient-boosting-expert]
+    MLE -.->|timestamp cols| TS[time-series-expert]
+    MLE -.->|entity cols| GM[graph-ml-expert]
+    MLE -.->|text / NN| DL[deep-learning-expert]
+    MLE -.->|simulation| RL[rl-expert]
+    MLE -.->|survival / pareto / symbolic| SP[specialized-ml-expert]
     end
 
     subgraph Finalization
-    TR --> PS[ml-competition-pre-submit]
+    MLE --> EN[ensemble-expert]
     end
 
     %% Failure escalation
-    DP -.->|failure| IE
-    MS -.->|failure| DP
-    TR -.->|failure| MS
+    FE -.->|failure| DPE
+    BE -.->|failure| FE
+    MLE -.->|failure| FE
 ```
 
 ### How this iteration works
 
 1. **research-analyst** — reads competition metadata and any existing `MEMORY.md`; mines literature and hypothesis bank; writes `references/hypotheses.md` and `references/roadmap.md`.
-2. **infrastructure-expert** — profiles hardware; runs preflight; decides local vs. Modal execution; sets up Zarr storage if needed. Writes `reports/system_resources.md`.
-3. **data-processing-expert** — loads raw files; runs EDA; profiles leakage, drift, imbalance, missing values; scaffolds `src/config.py`, `src/data.py`. Writes data contract.
-4. **visualization-expert** — produces full diagnostic figure suite. Writes to `reports/figures/`.
-5. **ml-statistics-expert** — builds statistical baselines; validates assumptions; runs SHAP audit. Writes `reports/statistical_assumptions.md`.
-6. **[conditional agents]** — invoked based on data contract (see topology above).
-7. **training pipeline** — loads `ml-competition-features`, `ml-competition-training`, `ml-competition-tuning`, `ml-competition-advanced` skills in sequence; runs cross-validation; saves `artifacts/oof.npy`.
-8. **ml-competition-pre-submit** — validates leakage, submission format, and adversarial drift. Gate: all CRITICAL items must pass before any submission is generated.
+2. **setup-expert** — scaffolds project layout and `RunConfig`; profiles hardware; runs preflight; decides local vs. Modal execution; sets up Zarr storage if needed. Writes `config.yaml`, `base/config.py`, `reports/system_resources.md`.
+3. **data-pipeline-expert** — orchestrates the data sub-pipeline in order:
+   - **data-processing-expert** — loads raw files; profiles leakage, drift, imbalance, missing values; writes `src/data.py` and data contract.
+   - **visualization-expert** — produces full diagnostic figure suite. Writes to `reports/figures/`.
+   - **feature-engineering-expert** — builds aggregations, encodings, interactions; writes versioned feature cache.
+4. **baseline-expert** — builds sklearn baselines; validates statistical assumptions; runs SHAP audit. Writes `reports/statistical_assumptions.md` and `reports/interpretability/shap_values.pkl`.
+5. **mle-expert** — reads data contract and conditionally invokes model agents:
+   - **gradient-boosting-expert** — LightGBM / XGBoost / CatBoost + Optuna tuning. Saves OOF predictions.
+   - **time-series-expert** — if `TIMESTAMP_FEATURES` non-empty.
+   - **graph-ml-expert** — if entity/relational columns present.
+   - **deep-learning-expert** — if text columns or embeddings present.
+   - **rl-expert** — if simulation or sequential decision task.
+   - **specialized-ml-expert** — if survival / multi-objective / symbolic.
+6. **ensemble-expert** — collects all OOF predictions; runs greedy selection and weighted blend; runs pre-submit gate; generates final `submissions/submission.csv`.
 
 ### Handoff contract — `EXPERIMENT_STATE.json`
 
@@ -65,12 +69,16 @@ Every executing agent MUST write its entry as its **final action**. The pipeline
 
 ```json
 {
-  "research_analyst":        {"status": "success", "hypotheses_count": 0, "roadmap_path": "references/roadmap.md"},
-  "infrastructure_expert":   {"status": "success", "execution_environment": "local_cpu|local_gpu|modal_cloud", "preflight_passed": true},
-  "data_processing_expert":  {"status": "success", "data_contract": {"train_shape": "...", "target_col": "...", "num_features": [], "cat_features": []}},
-  "visualization_expert":    {"status": "success", "figures_generated": 0},
-  "ml_statistics_expert":    {"status": "success", "baseline_oof_score": 0.0, "baseline_model": "..."},
-  "ml_engineer":             {"status": "success", "oof_score": 0.0, "metric": "<target_metric>", "files_modified": []}
+  "research_analyst":          {"status": "success", "hypotheses_count": 0, "roadmap_path": "references/roadmap.md"},
+  "setup_expert":              {"status": "success", "execution_backend": "local_cpu|local_gpu|modal", "preflight_passed": true, "config_path": "config.yaml"},
+  "data_pipeline_expert":      {"status": "success", "feature_cache_path": "cache/features_v1.pkl", "n_features": 0},
+  "data_processing_expert":    {"status": "success", "data_contract": {"train_shape": "...", "target_col": "...", "num_features": [], "cat_features": []}},
+  "visualization_expert":      {"status": "success", "figures_generated": 0},
+  "feature_engineering_expert":{"status": "success", "feature_version": 1, "n_features": 0, "dropped_features": 0},
+  "baseline_expert":           {"status": "success", "baseline_oof_score": 0.0, "shap_path": "reports/interpretability/shap_values.pkl"},
+  "mle_expert":                {"status": "success", "agents_invoked": [], "oof_scores": {}},
+  "gradient_boosting_expert":  {"status": "success", "lgb_oof_score": 0.0, "xgb_oof_score": 0.0, "cat_oof_score": 0.0},
+  "ensemble_expert":           {"status": "success", "ensemble_oof_score": 0.0, "submission_path": "submissions/submission_v1.csv", "pre_submit_gate": "passed"}
 }
 ```
 
@@ -264,15 +272,20 @@ Each file has exactly one owner. Every agent must stay inside its defined scope.
 | Agent | Writes | Never touches |
 | ----- | ------ | ------------- |
 | **research-analyst** | `references/hypotheses.md`, `references/roadmap.md` | all source files; never writes `EXPERIMENT_STATE.json` |
-| **infrastructure-expert** | `scripts/preflight.py`, `src/storage.py`, `modal_train.py`, `reports/system_resources.md` | `src/data.py`, `src/config.py`, model trainers |
-| **data-processing-expert** | `src/config.py`, `src/data.py`, `src/__init__.py` | everything else in `src/` |
+| **setup-expert** | `base/config.py`, `config.yaml`, `scripts/preflight.py`, `src/storage.py`, `modal_train.py`, `reports/system_resources.md` | `src/data.py`, model trainers, feature files |
+| **data-pipeline-expert** | `EXPERIMENT_STATE.json["data_pipeline_expert"]` | all source files — orchestrator only |
+| **data-processing-expert** | `src/data.py`, `src/__init__.py` | everything else in `src/` |
 | **visualization-expert** | `reports/figures/`, `scripts/plot_shap.py` | all `src/` and `scripts/train*.py` |
-| **ml-statistics-expert** | `src/models_baseline.py`, `scripts/train_baseline.py`, `scripts/validate_assumptions.py`, `scripts/shap_audit.py`, `reports/statistical_assumptions.md` | `src/data.py`, `src/config.py`, gradient-boosting or neural trainers |
-| **time-series-expert** | `src/features_ts.py`, `data/ts_splits.pkl` | `src/data.py`, `src/config.py` |
-| **graph-ml-expert** | `src/features_graph.py`, `scripts/train_gnn.py`, `data/graph_features.parquet` | `src/data.py`, `src/config.py` |
-| **deep-learning-expert** | `src/models_nn.py`, `scripts/train_nn.py`, `data/embeddings/` | `src/data.py`, `src/config.py`, tree-model trainers |
+| **feature-engineering-expert** | `base/features.py`, `cache/features_v*.pkl` | `src/data.py`, `base/config.py`, model trainers |
+| **baseline-expert** | `src/models_baseline.py`, `scripts/train_baseline.py`, `scripts/validate_assumptions.py`, `scripts/shap_audit.py`, `reports/statistical_assumptions.md`, `reports/interpretability/` | `src/data.py`, `base/config.py`, gradient-boosting or neural trainers |
+| **mle-expert** | `EXPERIMENT_STATE.json["mle_expert"]` | all source files — orchestrator only |
+| **gradient-boosting-expert** | `base/lgb_trainer.py`, `base/xgb_trainer.py`, `base/cat_trainer.py`, `train/lgb.py`, `train/xgb.py`, `train/cat.py`, `tune/tune_*.py`, `oof/gbm_*.npy` | `src/data.py`, `base/config.py`, neural trainers |
+| **time-series-expert** | `src/features_ts.py`, `data/ts_splits.pkl` | `src/data.py`, `base/config.py` |
+| **graph-ml-expert** | `src/features_graph.py`, `scripts/train_gnn.py`, `data/graph_features.parquet` | `src/data.py`, `base/config.py` |
+| **deep-learning-expert** | `src/models_nn.py`, `scripts/train_nn.py`, `data/embeddings/` | `src/data.py`, `base/config.py`, tree-model trainers |
 | **rl-expert** | `src/env_wrapper.py`, `scripts/train_rl.py`, `scripts/eval_rl.py`, `scripts/submit_rl.py` | all other source files |
 | **specialized-ml-expert** | `src/models_specialized.py`, `scripts/train_specialized.py`, `src/features_symbolic.py`, `config/best_thresholds.json` | base model trainers, config |
+| **ensemble-expert** | `train/meta.py`, `train/meta_gating.py`, `submissions/submission_v*.csv` | all trainer and feature files |
 | **team-lead** | `EXPERIMENT_STATE.json["team_lead"]` | all source files |
 
 ## Escalation Rule
